@@ -22,6 +22,11 @@
         </div>
 
         <div class="mb-3">
+            <label>Featured Photo</label>
+            <input type="file" name="featured_photo" class="form-control" multiple>
+        </div>
+
+        <div class="mb-3">
             <label>Photos</label>
             <input type="file" name="photos[]" class="form-control" multiple>
         </div>

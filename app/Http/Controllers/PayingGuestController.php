@@ -15,6 +15,7 @@ class PayingGuestController extends Controller
     public function index()
     {
         $guests = PayingGuest::latest()->paginate(10);
+
         return view('masteradmin.pages.paying_guests.index', compact('guests'));
     }
 
@@ -28,19 +29,32 @@ class PayingGuestController extends Controller
         $data = $this->validateData($request);
 
         // File uploads
-        $data['photo'] = $this->uploadFile($request, 'photo');
-        $data['aadhar_front_photo'] = $this->uploadFile($request, 'aadhar_front_photo');
-        $data['aadhar_back_photo'] = $this->uploadFile($request, 'aadhar_back_photo');
+        $data['photo'] = null;
+        $data['aadhar_front_photo'] = null;
+        $data['aadhar_back_photo'] = null;
 
-        // Handle file uploads
+        // Upload main photo
         if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('pg_photos', 'public');
+            $file = $request->file('photo');
+            $filename = time().'_'.$file->getClientOriginalName();
+            $file->move(public_path('pg_photos'), $filename);
+            $data['photo'] = 'pg_photos/'.$filename;
         }
+
+        // Upload Aadhar front
         if ($request->hasFile('aadhar_front_photo')) {
-            $data['aadhar_front_photo'] = $request->file('aadhar_front_photo')->store('aadhar_photos', 'public');
+            $file = $request->file('aadhar_front_photo');
+            $filename = time().'_'.$file->getClientOriginalName();
+            $file->move(public_path('aadhar_photos'), $filename);
+            $data['aadhar_front_photo'] = 'aadhar_photos/'.$filename;
         }
+
+        // Upload Aadhar back
         if ($request->hasFile('aadhar_back_photo')) {
-            $data['aadhar_back_photo'] = $request->file('aadhar_back_photo')->store('aadhar_photos', 'public');
+            $file = $request->file('aadhar_back_photo');
+            $filename = time().'_'.$file->getClientOriginalName();
+            $file->move(public_path('aadhar_photos'), $filename);
+            $data['aadhar_back_photo'] = 'aadhar_photos/'.$filename;
         }
 
         $save = PayingGuest::create($data);
@@ -57,7 +71,6 @@ class PayingGuestController extends Controller
         return view('masteradmin.pages.paying_guests.edit', compact('payingGuest'));
     }
 
-
     public function show(PayingGuest $payingGuest)
     {
         return view('masteradmin.pages.paying_guests.show', compact('payingGuest'));
@@ -70,10 +83,24 @@ class PayingGuestController extends Controller
         // Replace uploaded files
         foreach (['photo', 'aadhar_front_photo', 'aadhar_back_photo'] as $field) {
             if ($request->hasFile($field)) {
-                if ($payingGuest->$field) {
-                    Storage::disk('public')->delete($payingGuest->$field);
+
+                // Delete existing file if it exists
+                if ($payingGuest->$field && file_exists(public_path($payingGuest->$field))) {
+                    unlink(public_path($payingGuest->$field));
                 }
-                $data[$field] = $this->uploadFile($request, $field);
+
+                // Upload new file directly to public folder
+                $file = $request->file($field);
+                $filename = time().'_'.$file->getClientOriginalName();
+
+                // Determine folder based on field
+                $folder = match ($field) {
+                    'photo' => 'pg_photos',
+                    'aadhar_front_photo', 'aadhar_back_photo' => 'aadhar_photos',
+                };
+
+                $file->move(public_path($folder), $filename);
+                $data[$field] = $folder.'/'.$filename;
             }
         }
 
@@ -109,7 +136,7 @@ class PayingGuestController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email',
-            'aadhar_number' => 'required|string|unique:paying_guests,aadhar_number,' . $id,
+            'aadhar_number' => 'required|string|unique:paying_guests,aadhar_number,'.$id,
             'date_of_birth' => 'nullable|date',
             'father_name' => 'nullable|string',
             'father_phone' => 'nullable|string',
@@ -134,7 +161,7 @@ class PayingGuestController extends Controller
         if ($request->hasFile($field)) {
             return $request->file($field)->store("paying_guests/{$field}", 'public');
         }
+
         return null;
     }
-
 }

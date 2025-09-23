@@ -31,7 +31,7 @@
                 <div class="col-md-3">
                     <strong>Photo:</strong><br>
                     @if ($payingGuest->photo)
-                        <img src="{{ asset('storage/' . $payingGuest->photo) }}" class="img-fluid rounded mb-2">
+                        <img src="{{ asset($payingGuest->photo) }}" class="img-fluid rounded mb-2">
                     @endif
                 </div>
 
@@ -58,13 +58,13 @@
             <div class="col-md-6">
                 <h5>Aadhar Front</h5>
                 @if ($payingGuest->aadhar_front_photo)
-                    <img src="{{ asset('storage/' . $payingGuest->aadhar_front_photo) }}" class="img-fluid rounded">
+                    <img src="{{ asset($payingGuest->aadhar_front_photo) }}" class="img-fluid rounded">
                 @endif
             </div>
             <div class="col-md-6">
                 <h5>Aadhar Back</h5>
                 @if ($payingGuest->aadhar_back_photo)
-                    <img src="{{ asset('storage/' . $payingGuest->aadhar_back_photo) }}" class="img-fluid rounded">
+                    <img src="{{ asset($payingGuest->aadhar_back_photo) }}" class="img-fluid rounded">
                 @endif
             </div>
         </div>

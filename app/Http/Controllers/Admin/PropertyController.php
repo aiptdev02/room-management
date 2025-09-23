@@ -10,7 +10,8 @@ class PropertyController extends Controller
 {
     public function index()
     {
-        $properties = Property::latest()->paginate(10);
+        $properties = Property::with('rooms')->latest()->paginate(10);
+
         return view('masteradmin.pages.properties.index', compact('properties'));
     }
 
@@ -28,10 +29,26 @@ class PropertyController extends Controller
             'photos.*' => 'nullable|image|max:2048',
         ]);
 
+        $data['featured_photo'] = null;
+        if ($request->hasFile('featured_photo')) {
+            $file = $request->file('featured_photo');
+            $filename = time().'_'.$file->getClientOriginalName();
+
+            // Save directly to public/properties
+            $file->move(public_path('properties'), $filename);
+
+            $data['featured_photo'] = 'properties/'.$filename;
+        }
+
         $photos = [];
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $file) {
-                $photos[] = $file->store('properties', 'public');
+                $filename = time().'_'.$file->getClientOriginalName();
+
+                // Save directly to public/properties
+                $file->move(public_path('properties'), $filename);
+
+                $photos[] = 'properties/'.$filename;
             }
         }
 
@@ -61,10 +78,26 @@ class PropertyController extends Controller
             'photos.*' => 'nullable|image|max:2048',
         ]);
 
+        $data['featured_photo'] = $property->featured_photo ?? null;
+        if ($request->hasFile('featured_photo')) {
+            $file = $request->file('featured_photo');
+            $filename = time().'_'.$file->getClientOriginalName();
+
+            // Save directly to public/properties
+            $file->move(public_path('properties'), $filename);
+
+            $data['featured_photo'] = 'properties/'.$filename;
+        }
+
         $photos = $property->photos ?? [];
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $file) {
-                $photos[] = $file->store('properties', 'public');
+                $filename = time().'_'.$file->getClientOriginalName();
+
+                // Save directly to public/properties
+                $file->move(public_path('properties'), $filename);
+
+                $photos[] = 'properties/'.$filename;
             }
         }
 
@@ -78,6 +111,7 @@ class PropertyController extends Controller
     public function destroy(Property $property)
     {
         $property->delete();
+
         return redirect()->route('properties.index')->with('success', 'Property deleted successfully.');
     }
 }

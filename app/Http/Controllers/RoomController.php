@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\PayingGuest;
 use App\Models\Property;
 use App\Models\Room;
 use Illuminate\Http\Request;
@@ -13,13 +13,16 @@ class RoomController extends Controller
     public function index()
     {
         $rooms = Room::latest()->get();
-        return view('masteradmin.pages.rooms.index', compact('rooms'));
+        $properties = Property::all();
+        $guests = PayingGuest::all();
+        return view('masteradmin.pages.rooms.index', compact('rooms', 'properties', 'guests'));
     }
 
     public function create()
     {
         $properties = Property::all();
-        return view('masteradmin.pages.rooms.create', compact( 'properties'));
+
+        return view('masteradmin.pages.rooms.create', compact('properties'));
     }
 
     public function store(Request $request)
@@ -51,6 +54,7 @@ class RoomController extends Controller
     public function edit(Room $room)
     {
         $properties = Property::all();
+
         return view('masteradmin.pages.rooms.edit', compact('room', 'properties'));
     }
 
@@ -82,6 +86,16 @@ class RoomController extends Controller
             return redirect()->url('/master/dashboard')->with('success', 'You are not allowed.');
         }
         $room->delete();
+
         return redirect()->route('rooms.index')->with('success', 'Room deleted!');
+    }
+
+    public function getRoomsByProperty($propertyId)
+    {
+        $rooms = Room::where('property_id', $propertyId)
+            ->with(['assignments.guest'])
+            ->get();
+
+        return response()->json($rooms);
     }
 }

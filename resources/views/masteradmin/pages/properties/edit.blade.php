@@ -24,10 +24,18 @@
             </div>
 
             <div class="mb-3">
+                <label>Featured Photo</label><br>
+                @if ($property->featured_photo)
+                    <img src="{{ asset($property->featured_photo) }}" width="100" class="me-2 mb-2">
+                @endif
+                <input type="file" name="featured_photo" class="form-control" multiple>
+            </div>
+
+            <div class="mb-3">
                 <label>Photos</label><br>
                 @if ($property->photos)
                     @foreach ($property->photos as $photo)
-                        <img src="{{ asset('storage/' . $photo) }}" width="100" class="me-2 mb-2">
+                        <img src="{{ asset($photo) }}" width="100" class="me-2 mb-2">
                     @endforeach
                 @endif
                 <input type="file" name="photos[]" class="form-control" multiple>

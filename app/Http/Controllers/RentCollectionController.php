@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RentCollection;
 use App\Models\PayingGuest;
+use App\Models\Property;
+use App\Models\RentCollection;
 use Illuminate\Http\Request;
 
 class RentCollectionController extends Controller
@@ -23,20 +24,21 @@ class RentCollectionController extends Controller
 
         $rents = $query->get();
 
-        $properties = \App\Models\Property::all();
+        $properties = Property::all();
 
-        return view( 'masteradmin.pages.rent_collections.index', compact('rents', 'properties'));
+        return view('masteradmin.pages.rent_collections.index', compact('rents', 'properties'));
     }
 
     public function create()
     {
         $guests = PayingGuest::with('currentRoom')->get();
-        // dd($guests);
+
         return view('masteradmin.pages.rent_collections.create', compact('guests'));
     }
 
     public function store(Request $request)
     {
+        $guests = PayingGuest::with('currentRoom')->where('id', $request->paying_guest_id)->first();
         $request->validate([
             'paying_guest_id' => 'required|exists:paying_guests,id',
             'rent_amount' => 'required|numeric',
@@ -45,13 +47,13 @@ class RentCollectionController extends Controller
 
         RentCollection::create([
             'paying_guest_id' => $request->paying_guest_id,
-            'room_id' => $request->room_id,
-            'property_id' => $request->property_id,
+            'room_id' => $guests->currentRoom->room->id,
+            'property_id' => $guests->currentRoom->room->property->id,
             'rent_amount' => $request->rent_amount,
             'electricity_charges' => $request->electricity_charges,
             'other_charges' => $request->other_charges,
             'month' => $request->month,
-            'is_paid' => $request->has('is_paid')
+            'is_paid' => $request->has('is_paid'),
         ]);
 
         return redirect()->route('rent_collections.index')->with('success', 'Rent collected successfully!');

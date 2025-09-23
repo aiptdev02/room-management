@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Property extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['name', 'location', 'details', 'photos'];
+    protected $fillable = ['name', 'location', 'details', 'photos', 'featured_photo'];
 
     protected $casts = [
         'photos' => 'array',
