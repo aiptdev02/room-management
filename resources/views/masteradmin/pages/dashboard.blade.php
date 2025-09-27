@@ -37,7 +37,7 @@
             <div class="col-md-3">
                 <div class="card p-3">
                     <h6 class="mb-1">Actions</h6>
-                    <a href="{{ route('rooms.create') }}" class="btn btn-sm btn-success w-100 mb-1">Add Room</a>
+                    <a href="{{ route('tenents.create') }}" class="btn btn-sm btn-success w-100 mb-1">Add Room</a>
                     <a href="{{ route('paying-guests.create') }}" class="btn btn-sm btn-primary w-100 mb-1">Add
                         Guest</a>
                     <a href="{{ route('assignments.create') }}" class="btn btn-sm btn-outline-primary w-100">Assign
@@ -113,7 +113,7 @@
                                 <td>
                                     <a href="{{ route('paying-guests.show', $a->paying_guest_id) }}"
                                         class="btn btn-sm btn-link">Guest</a>
-                                    <a href="{{ route('rooms.show', $a->room_id) }}"
+                                    <a href="{{ route('tenents.show', $a->room_id) }}"
                                         class="btn btn-sm btn-link">Room</a>
                                 </td>
                             </tr>

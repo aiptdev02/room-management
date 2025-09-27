@@ -18,13 +18,14 @@ class RoomAssignmentController extends Controller
     {
         // Optionally accept guest_id param to pre-select guest
         $guestId = $request->get('guest_id');
+        $property_id = $request->get('property_id');
 
         // list guests (you can limit to unassigned or all)
         $guests = PayingGuest::orderBy('name')->get();
 
         $properties = Property::all();
 
-        return view('masteradmin.pages.room_assignments.create', compact('guests', 'guestId', 'properties'));
+        return view('masteradmin.pages.room_assignments.create', compact('guests', 'guestId', 'properties', 'property_id'));
     }
 
     /**

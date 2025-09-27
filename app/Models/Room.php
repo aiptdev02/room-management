@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Room extends Model
 {
     use SoftDeletes;
+
     protected $fillable = [
         'property_id',
         'room_number',
@@ -51,8 +52,14 @@ class Room extends Model
     {
         return max(0, $this->capacity - $this->currentOccupancy());
     }
+
     public function property()
     {
         return $this->belongsTo(Property::class);
+    }
+
+    public function rooms()
+    {
+        return $this->hasMany(Room::class);
     }
 }

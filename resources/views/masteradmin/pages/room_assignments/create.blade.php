@@ -30,10 +30,10 @@
 
             <div class="mb-3">
                 <label>Property</label>
-                <select name="property_id" class="form-control" required>
+                <select name="property_id" class="form-control" required >
                     <option value="">-- Select Property --</option>
                     @foreach ($properties as $property)
-                        <option value="{{ $property->id }}">
+                        <option value="{{ $property->id }}" {{ isset($property_id) && $property_id == $property->id ? 'selected' : '' }}>
                             {{ $property->name }}
                         </option>
                     @endforeach

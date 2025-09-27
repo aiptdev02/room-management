@@ -23,10 +23,7 @@
                 </tr>
             </thead>
             <tbody>
-                @for ($i = 0; $i < $properties->total_rooms; $i++)
-                    @php
-                        $room = $rooms[$i] ?? null;
-                    @endphp
+                @foreach ($rooms as $room)
                     <tr data-room-id="{{ $room->id ?? '' }}">
                         <td>
                             <input name="room_number" data-field="room_number" type="text"
@@ -71,11 +68,15 @@
                                 {!! $room ? '<i class="fa-solid fa-pen-to-square"></i>' : 'Save' !!}
                             </button>
 
+                            <a href={{ "/master/assignments/create?property_id=$properties->id&room_id=$room->id" }} class="btn btn-sm btn-warning">
+                                <i class="fa-solid fa-user-plus"></i>
+                            </a>
+
                             {{-- fallback row-level feedback (used if server error isn't field specific) --}}
                             <div class="row-feedback mt-1 small text-danger" style="display:none;"></div>
                         </td>
                     </tr>
-                @endfor
+                @endforeach
             </tbody>
         </table>
 
@@ -163,7 +164,7 @@
                         1 : 0;
 
                     // basic client validation
-                    if (!property_id || !room_number || !room_type || !capacity) {
+                    if (!property_id || !room_number || !room_type) {
                         // set small messages under fields that are empty
                         if (!room_number) {
                             const el = tr.querySelector(
@@ -178,13 +179,6 @@
                             el.style.display = 'block';
                             el.innerText = 'Room type is required.';
                             tr.querySelector('[data-field="room_type"]').classList.add(
-                                'is-invalid');
-                        }
-                        if (!capacity) {
-                            const el = tr.querySelector(`.field-error[data-field="capacity"]`);
-                            el.style.display = 'block';
-                            el.innerText = 'Capacity is required.';
-                            tr.querySelector('[data-field="capacity"]').classList.add(
                                 'is-invalid');
                         }
                         return;
@@ -247,10 +241,10 @@
                             if (data.update_url) {
                                 button.dataset.updateUrl = data.update_url;
                                 button.dataset.method = 'PUT';
-                                button.innerText = 'Update';
+                                button.innerText = '<i class="fa-solid fa-pen-to-square"></i>';
                             } else {
                                 button.dataset.method = 'PUT';
-                                button.innerText = 'Update';
+                                button.innerText = '<i class="fa-solid fa-pen-to-square"></i>';
                             }
                         }
 
@@ -278,7 +272,8 @@
                         button.disabled = false;
                         if (!button.innerText || button.innerText === 'Saving...' || button
                             .innerText === 'Updating...') {
-                            button.innerText = (button.dataset.method === 'PUT') ? 'Update' :
+                            button.innerText = (button.dataset.method === 'PUT') ?
+                                '<i class="fa-solid fa-pen-to-square"></i>' :
                                 'Save';
                         }
                     }

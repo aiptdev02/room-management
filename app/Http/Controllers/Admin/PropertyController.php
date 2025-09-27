@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Property;
+use App\Models\Room;
 use Illuminate\Http\Request;
 
 class PropertyController extends Controller
@@ -55,7 +56,20 @@ class PropertyController extends Controller
 
         $data['photos'] = $photos;
 
-        Property::create($data);
+        $property = Property::create($data);
+
+        // Create Rooms
+        if ($property && $request->total_rooms > 0) {
+            for ($i = 1; $i <= $request->total_rooms; $i++) {
+                Room::create([
+                    'property_id' => $property->id,
+                    'room_number' => "R{$i}",
+                    'room_type' => 'Standard', // default
+                    'capacity' => 1,
+                    'status' => 'available',
+                ]);
+            }
+        }
 
         return redirect()->route('properties.index')->with('success', 'Property created successfully.');
     }
@@ -75,41 +89,58 @@ class PropertyController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
-            'total_rooms' => 'nullable|integer',
+            'total_rooms' => 'nullable|integer|min:0',
             'details' => 'nullable|string',
             'photos.*' => 'nullable|image|max:2048',
         ]);
 
+        // Featured photo
         $data['featured_photo'] = $property->featured_photo ?? null;
         if ($request->hasFile('featured_photo')) {
             $file = $request->file('featured_photo');
             $filename = time().'_'.$file->getClientOriginalName();
-
-            // Save directly to public/properties
             $file->move(public_path('properties'), $filename);
-
             $data['featured_photo'] = 'properties/'.$filename;
         }
 
+        // Multiple photos
         $photos = $property->photos ?? [];
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $file) {
                 $filename = time().'_'.$file->getClientOriginalName();
-
-                // Save directly to public/properties
                 $file->move(public_path('properties'), $filename);
-
                 $photos[] = 'properties/'.$filename;
             }
         }
-
         $data['photos'] = $photos;
 
+        // Update Property
         $property->update($data);
 
-        if ($property) {
-            for ($i = 0; $i < $request->total_rooms; $i++) {
-                // code...
+        // 🔑 Room Sync
+        $currentRoomCount = $property->rooms()->count();
+        $newRoomCount = $request->total_rooms ?? 0;
+
+        if ($newRoomCount > $currentRoomCount) {
+            // Add new rooms
+            for ($i = $currentRoomCount + 1; $i <= $newRoomCount; $i++) {
+                Room::create([
+                    'property_id' => $property->id,
+                    'room_number' => "R{$i}",
+                    'room_type' => 'Standard',
+                    'capacity' => 1,
+                    'status' => 'available',
+                ]);
+            }
+        } elseif ($newRoomCount < $currentRoomCount) {
+            // Remove extra rooms (latest added)
+            $roomsToDelete = $property->rooms()
+                ->orderBy('id', 'desc')
+                ->take($currentRoomCount - $newRoomCount)
+                ->get();
+
+            foreach ($roomsToDelete as $room) {
+                $room->delete();
             }
         }
 
