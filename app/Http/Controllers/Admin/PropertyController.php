@@ -25,6 +25,7 @@ class PropertyController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
+            'total_rooms' => 'nullable|integer',
             'details' => 'nullable|string',
             'photos.*' => 'nullable|image|max:2048',
         ]);
@@ -74,6 +75,7 @@ class PropertyController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
+            'total_rooms' => 'nullable|integer',
             'details' => 'nullable|string',
             'photos.*' => 'nullable|image|max:2048',
         ]);
@@ -104,6 +106,12 @@ class PropertyController extends Controller
         $data['photos'] = $photos;
 
         $property->update($data);
+
+        if ($property) {
+            for ($i = 0; $i < $request->total_rooms; $i++) {
+                // code...
+            }
+        }
 
         return redirect()->route('properties.index')->with('success', 'Property updated successfully.');
     }

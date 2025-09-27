@@ -27,8 +27,7 @@
                         <h5 class="card-title">{{ $property->name }}</h5>
                         <p class="card-text">
                             <strong>Location:</strong> {{ $property->location }} <br>
-                            <strong>Details:</strong> {{ Str::limit($property->details, 80) }}<br>
-                            <strong>Total Rooms:</strong> {{ count($property->rooms) }}
+                            <strong>Total Rooms:</strong> {{ Str::limit($property->total_rooms, 80) }}<br>
                         </p>
                         <div class="mt-1">
                             <a href="{{ route('properties.show', $property->id) }}" class="btn btn-info btn-sm">View</a>

@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\PayingGuest;
+use App\Models\Property;
 use App\Models\Room;
 use App\Models\RoomAssignment;
-use App\Models\PayingGuest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class RoomAssignmentController extends Controller
 {
@@ -23,12 +22,9 @@ class RoomAssignmentController extends Controller
         // list guests (you can limit to unassigned or all)
         $guests = PayingGuest::orderBy('name')->get();
 
-        // rooms with remaining slots
-        $rooms = Room::all()->filter(function ($room) {
-            return $room->remainingSlots() > 0;
-        });
+        $properties = Property::all();
 
-        return view('masteradmin.pages.room_assignments.create', compact('guests', 'rooms', 'guestId'));
+        return view('masteradmin.pages.room_assignments.create', compact('guests', 'guestId', 'properties'));
     }
 
     /**
@@ -49,7 +45,8 @@ class RoomAssignmentController extends Controller
         // Prevent assigning a guest already actively assigned
         $already = $guest->assignments()->where('is_active', true)
             ->where(function ($q) {
-                $q->whereNull('end_date')->orWhere('end_date', '>=', now()->toDateString()); })
+                $q->whereNull('end_date')->orWhere('end_date', '>=', now()->toDateString());
+            })
             ->exists();
 
         if ($already) {
@@ -63,6 +60,7 @@ class RoomAssignmentController extends Controller
             $room = Room::lockForUpdate()->find($room->id);
             if ($room->remainingSlots() <= 0) {
                 DB::rollBack();
+
                 return back()->with('error', 'Room has no free slots left. Choose another room.');
             }
 
@@ -82,9 +80,11 @@ class RoomAssignmentController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('rooms.show', $room->id)->with('success', 'Guest assigned to room.');
+
+            return redirect()->route('tenents.show', $room->id)->with('success', 'Guest assigned to room.');
         } catch (\Throwable $e) {
             DB::rollBack();
+
             // log error in real app
             return back()->with('error', 'Failed to assign guest. Try again.');
         }
@@ -104,7 +104,8 @@ class RoomAssignmentController extends Controller
         // Prevent double assignment
         $already = $guest->assignments()->where('is_active', true)
             ->where(function ($q) {
-                $q->whereNull('end_date')->orWhere('end_date', '>=', now()->toDateString()); })
+                $q->whereNull('end_date')->orWhere('end_date', '>=', now()->toDateString());
+            })
             ->exists();
         if ($already) {
             return back()->with('error', 'Guest already has an active assignment.');
@@ -115,7 +116,7 @@ class RoomAssignmentController extends Controller
             return $r->remainingSlots() > 0;
         });
 
-        if (!$room) {
+        if (! $room) {
             return back()->with('error', 'No rooms have free slots.');
         }
 
@@ -133,6 +134,7 @@ class RoomAssignmentController extends Controller
             $room = Room::lockForUpdate()->find($room->id);
             if ($room->remainingSlots() <= 0) {
                 DB::rollBack();
+
                 return back()->with('error', 'Room has no free slots left.');
             }
 
@@ -149,9 +151,11 @@ class RoomAssignmentController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('rooms.show', $room->id)->with('success', 'Assigned successfully.');
+
+            return redirect()->route('tenents.show', $room->id)->with('success', 'Assigned successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
+
             return back()->with('error', 'Assignment failed.');
         }
     }
@@ -165,7 +169,7 @@ class RoomAssignmentController extends Controller
             'end_date' => 'nullable|date',
         ]);
 
-        if (!$assignment->is_active) {
+        if (! $assignment->is_active) {
             return back()->with('error', 'Assignment already inactive.');
         }
 
@@ -183,9 +187,11 @@ class RoomAssignmentController extends Controller
             }
 
             DB::commit();
+
             return back()->with('success', 'Guest unassigned from room.');
         } catch (\Throwable $e) {
             DB::rollBack();
+
             return back()->with('error', 'Failed to unassign.');
         }
     }

@@ -15,6 +15,10 @@
                 </p>
                 <p class="mb-0">
                     <i class="bi bi-info-circle-fill text-secondary me-2"></i>
+                    <strong>Total Rooms:</strong> {{ $property->total_rooms }}
+                </p>
+                <p class="mb-0">
+                    <i class="bi bi-info-circle-fill text-secondary me-2"></i>
                     <strong>Details:</strong> {{ $property->details }}
                 </p>
             </div>

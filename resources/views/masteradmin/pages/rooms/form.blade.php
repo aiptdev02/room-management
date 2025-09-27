@@ -5,7 +5,7 @@
 @section('content')
     <h2>{{ isset($room) ? 'Edit Room' : 'Add New Room' }}</h2>
 
-    <form action="{{ isset($room) ? route('rooms.update', $room) : route('rooms.store') }}" method="POST" class="form-submit">
+    <form action="{{ isset($room) ? route('tenents.update', $room) : route('tenents.store') }}" method="POST" class="form-submit">
         @csrf
         @if (isset($room))
             @method('PUT')

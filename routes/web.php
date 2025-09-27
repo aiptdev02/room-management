@@ -32,9 +32,10 @@ Route::middleware('masteraccess')->group(function () {
         Route::get('dashboard', 'dashboard');
         Route::resource('paying-guests', PayingGuestController::class);
         Route::resource('properties', PropertyController::class);
-        Route::resource('rooms', RoomController::class);
+        Route::resource('tenents', RoomController::class)->name('rooms', 'tenents');
         Route::get('/rooms/by-property/{property}', [RoomController::class, 'getRoomsByProperty'])->name('rooms.byProperty');
-        
+        Route::get('/rooms/unassigned-rooms/{property}', [RoomController::class, 'getUnassignedRooms'])->name('rooms.unassignedRooms');
+
         Route::get('assignments/create', [RoomAssignmentController::class, 'create'])->name('assignments.create');
         Route::post('assignments/store', [RoomAssignmentController::class, 'store'])->name('assignments.store');
         Route::post('assignments/auto-assign', [RoomAssignmentController::class, 'autoAssign'])->name('assignments.auto');

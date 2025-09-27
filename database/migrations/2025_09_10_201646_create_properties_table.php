@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('name');
             $table->string('location');
             $table->text('details')->nullable();
+            $table->integer('total_rooms')->nullable();
             $table->json('photos')->nullable(); // store multiple photos as JSON array
             $table->timestamps();
             $table->softDeletes();

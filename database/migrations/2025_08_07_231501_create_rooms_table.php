@@ -14,9 +14,9 @@ return new class extends Migration {
             $table->id();
             $table->bigInteger('property_id');
             $table->string('room_number')->unique();
-            $table->string('room_type'); // e.g., Single, Double, Triple
+            $table->string('room_type')->nullable(); // e.g., Single, Double, Triple
             $table->integer('capacity')->default(1);
-            $table->decimal('rent', 10, 2);
+            $table->decimal('rent', 10, 2)->nullable();
             $table->string('floor')->nullable();
             $table->text('description')->nullable();
             $table->boolean('is_occupied')->default(false);

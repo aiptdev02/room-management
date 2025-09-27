@@ -15,6 +15,7 @@ class RoomController extends Controller
         $rooms = Room::latest()->get();
         $properties = Property::all();
         $guests = PayingGuest::all();
+
         return view('masteradmin.pages.rooms.index', compact('rooms', 'properties', 'guests'));
     }
 
@@ -33,22 +34,35 @@ class RoomController extends Controller
             'room_type' => 'required|string|max:50',
             'capacity' => 'required|integer|min:1',
             'rent' => 'nullable|numeric',
-            'floor' => 'nullable',
-            'description' => 'nullable',
+            'floor' => 'nullable|string|max:50',
+            'description' => 'nullable|string|max:255',
             'status' => 'nullable|string|max:50',
+            'is_occupied' => 'nullable|boolean',
         ]);
 
-        $save = Room::create($request->all());
-        if ($save) {
-            return response()->json(['status' => true, 'message' => 'Room added successfully!', 'url' => 'master/rooms']);
-        } else {
-            return response()->json(['status' => false, 'message' => 'Something went wrong!']);
+        // Ensure checkboxes are saved properly
+        $data['is_occupied'] = $request->has('is_occupied') ? 1 : 0;
+
+        $room = Room::create($data);
+
+        if ($room) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Room added successfully!',
+                'room' => $room,
+                'update_url' => route('tenents.update', $room->id),
+            ], 201);
         }
+
+        return response()->json(['status' => false, 'message' => 'Something went wrong!'], 500);
     }
 
-    public function show(Room $room)
+    public function show($id)
     {
-        return view('masteradmin.pages.rooms.show', compact('room'));
+        $properties = Property::find($id);
+        $rooms = Room::where('property_id', $id)->get();
+
+        return view('masteradmin.pages.rooms.show', compact('rooms', 'properties'));
     }
 
     public function edit(Room $room)
@@ -58,26 +72,32 @@ class RoomController extends Controller
         return view('masteradmin.pages.rooms.edit', compact('room', 'properties'));
     }
 
-    public function update(Request $request, Room $room)
+    public function update(Request $request, $id)
     {
+        $room = Room::find($id);
         $data = $request->validate([
             'property_id' => 'required|exists:properties,id',
             'room_number' => 'required|string|max:50',
             'room_type' => 'required|string|max:50',
             'capacity' => 'required|integer|min:1',
             'rent' => 'nullable|numeric',
-            'floor' => 'nullable',
-            'description' => 'nullable',
+            'floor' => 'nullable|string|max:50',
+            'description' => 'nullable|string|max:255',
             'status' => 'nullable|string|max:50',
+            'is_occupied' => 'nullable|boolean',
         ]);
 
-        $save = $room->update($data);
+        $data['is_occupied'] = $request->has('is_occupied') ? 1 : 0;
 
-        if ($save) {
-            return response()->json(['status' => true, 'message' => 'Room updated successfully!', 'url' => 'master/rooms']);
-        } else {
-            return response()->json(['status' => false, 'message' => 'Something went wrong!']);
+        if ($room->update($data)) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Room updated successfully!',
+                'room' => $room->fresh(),
+            ], 200);
         }
+
+        return response()->json(['status' => false, 'message' => 'Something went wrong!'], 500);
     }
 
     public function destroy(Room $room)
@@ -94,6 +114,14 @@ class RoomController extends Controller
     {
         $rooms = Room::where('property_id', $propertyId)
             ->with(['assignments.guest'])
+            ->get();
+
+        return response()->json($rooms);
+    }
+
+    public function getUnassignedRooms($propertyId)
+    {
+        $rooms = Room::where('property_id', $propertyId)->where('is_occupied', 0)
             ->get();
 
         return response()->json($rooms);

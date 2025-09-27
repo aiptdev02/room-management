@@ -19,6 +19,11 @@
             </div>
 
             <div class="mb-3">
+                <label>Total Rooms</label>
+                <input type="text" name="total_rooms" class="form-control" value="{{ $property->total_rooms }}" required>
+            </div>
+
+            <div class="mb-3">
                 <label>Details</label>
                 <textarea name="details" class="form-control">{{ $property->details }}</textarea>
             </div>

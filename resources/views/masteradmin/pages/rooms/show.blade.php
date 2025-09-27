@@ -6,118 +6,284 @@
     <div class="py-4">
         <!-- Breadcrumb and Back Button -->
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>Room {{ $room->room_number }}</h2>
-            <a href="{{ route('rooms.index') }}" class="btn btn-outline-secondary mb-4"><i class="bi bi-arrow-left"></i>
+            <h2>Rooms List</h2>
+            <a href="{{ route('tenents.index') }}" class="btn btn-outline-secondary mb-4"><i class="bi bi-arrow-left"></i>
                 Back</a>
         </div>
 
-
-        <!-- Room Overview Card -->
-        <div class="card shadow-sm mb-4 rounded-3">
-            <div class="card-header bg-primary text-white rounded-top">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <h3 class="mb-0"><i class="bi bi-door-open"></i> Room {{ $room->room_number }}</h3>
-                    <span class="badge bg-light text-dark rounded-pill h-50">Status:
-                        {{ $room->currentOccupancy() === $room->capacity ? 'Full' : 'Available' }}</span>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-6 col-lg-4">
-                        <div class="bg-light rounded p-3 h-100">
-                            <p class="mb-0"><strong><i class="bi bi-building text-primary"></i> Property</strong><br>
-                                <small class="text-muted">{{ $room->property->name }}</small><br>
-                                <i class="bi bi-geo-alt"></i> {{ $room->property->location }}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-2">
-                        <div class="bg-light rounded p-3 h-100">
-                            <p class="mb-0"><strong><i class="bi bi-tag-fill text-info"></i> Type</strong><br>
-                                <span class="badge bg-info text-dark">{{ $room->room_type }}</span>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-2">
-                        <div class="bg-light rounded p-3 h-100">
-                            <p class="mb-0"><strong><i class="bi bi-cash-coin text-success"></i> Rent</strong><br>
-                                <span class="text-success fs-5">₹{{ number_format($room->rent, 2) }}</span>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-2">
-                        <div class="bg-light rounded p-3 h-100">
-                            <p class="mb-0"><strong><i class="bi bi-people-fill text-primary"></i> Capacity</strong><br>
-                                {{ $room->capacity }}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-2">
-                        <div
-                            class="rounded p-3 h-100 {{ $room->currentOccupancy() > 0 ? 'bg-success text-white' : 'bg-light' }}">
-                            <p class="mb-0"><strong><i class="bi bi-person-fill"></i> Occupied</strong><br>
-                                <span
-                                    class="badge bg-{{ $room->currentOccupancy() > 0 ? 'light' : 'secondary' }} text-dark">{{ $room->currentOccupancy() }}</span>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-2">
-                        <div class="rounded p-3 h-100 {{ $room->remainingSlots() < 1 ? 'bg-light' : 'bg-warning' }}">
-                            <p class="mb-0"><strong><i class="bi bi-signpost-split"></i> Remaining</strong><br>
-                                <span
-                                    class="badge bg-{{ $room->remainingSlots() < 1 ? 'secondary' : 'warning text-dark' }}">{{ $room->remainingSlots() }}</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Active Assignments Card -->
-        <div class="card shadow-sm rounded-3 mb-4">
-            <div class="card-header bg-secondary text-white rounded-top">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-card-checklist me-2"></i>
-                    <h4 class="mb-0">Active Assignments</h4>
-                </div>
-            </div>
-            <div class="card-body">
-                @if ($room->activeAssignments()->count() > 0)
-                    <div class="row row-cols-1 row-cols-md-2 g-3">
-                        @foreach ($room->activeAssignments as $assignment)
-                            <div class="col">
-                                <div class="card h-100 border-primary shadow-sm rounded-3 overflow-hidden">
-                                    <div class="card-header bg-primary text-white">
-                                        <span
-                                            class="badge bg-{{ $assignment->is_active ? 'success' : 'secondary' }}">{{ $assignment->is_active ? 'Active' : 'Inactive' }}</span>
-                                    </div>
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ $assignment->occupant_name ?? 'Unknown' }}</h5>
-                                        <p class="card-text mb-0"><strong><i class="bi bi-calendar-check"></i>
-                                                Check-in:</strong>
-                                            {{ \Carbon\Carbon::parse($assignment->start_date)->format('d M Y') }}</p>
-                                        <p class="card-text mb-0"><strong><i class="bi bi-calendar-x"></i> End
-                                                Date:</strong>
-                                            {{ $assignment->end_date ? \Carbon\Carbon::parse($assignment->end_date)->format('d M Y') : 'Ongoing' }}
-                                        </p>
-                                    </div>
-                                </div>
+        <table class="table table-bordered" id="rooms-table">
+            <thead>
+                <tr>
+                    <th>Room Number</th>
+                    <th>Room Type</th>
+                    <th>Rent</th>
+                    <th>Floor</th>
+                    <th>Occupied</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for ($i = 0; $i < $properties->total_rooms; $i++)
+                    @php
+                        $room = $rooms[$i] ?? null;
+                    @endphp
+                    <tr data-room-id="{{ $room->id ?? '' }}">
+                        <td>
+                            <input name="room_number" data-field="room_number" type="text"
+                                class="form-control input-room_number"
+                                value="{{ old('room_number', $room->room_number ?? 101 + $i) }}">
+                            <div class="field-error text-danger small mt-1" data-field="room_number" style="display:none;">
                             </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="d-flex flex-column align-items-center justify-content-center p-4">
-                        <i class="bi bi-calendar-x fs-1 text-muted mb-2"></i>
-                        <p class="text-muted">No active assignments for this room.</p>
-                    </div>
-                @endif
-            </div>
-        </div>
+                        </td>
 
-        <!-- Actions -->
-        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-            <a href="{{ route('rooms.edit', $room->id) }}" class="btn btn-primary">Edit Details</a>
-            <a href="#" class="btn btn-outline-success me-md-2">New Assignment</a>
-        </div>
+                        <td>
+                            <input name="room_type" data-field="room_type" type="text"
+                                class="form-control input-room_type" value="{{ old('room_type', $room->room_type ?? '') }}">
+                            <div class="field-error text-danger small mt-1" data-field="room_type" style="display:none;">
+                            </div>
+                        </td>
+
+                        <td>
+                            <input name="rent" data-field="rent" type="number" step="0.01"
+                                class="form-control input-rent" value="{{ old('rent', $room->rent ?? '') }}">
+                            <div class="field-error text-danger small mt-1" data-field="rent" style="display:none;"></div>
+                        </td>
+
+                        <td>
+                            <input name="floor" data-field="floor" type="text" class="form-control input-floor"
+                                value="{{ old('floor', $room->floor ?? '') }}">
+                            <div class="field-error text-danger small mt-1" data-field="floor" style="display:none;"></div>
+                        </td>
+
+                        <td class="text-center">
+                            <input name="is_occupied" data-field="is_occupied" class="form-check-input input-is_occupied"
+                                type="checkbox" {{ old('is_occupied', $room->is_occupied ?? false) ? 'checked' : '' }}>
+                            <div class="field-error text-danger small mt-1" data-field="is_occupied" style="display:none;">
+                            </div>
+                        </td>
+
+                        <td>
+                            <input type="hidden" class="input-property_id" value="{{ $properties->id }}">
+
+                            <button class="btn btn-sm btn-success save-room" data-store-url="{{ route('tenents.store') }}"
+                                data-update-url="{{ $room ? route('tenents.update', $room->id) : '' }}"
+                                data-method="{{ $room ? 'PUT' : 'POST' }}">
+                                {!! $room ? '<i class="fa-solid fa-pen-to-square"></i>' : 'Save' !!}
+                            </button>
+
+                            {{-- fallback row-level feedback (used if server error isn't field specific) --}}
+                            <div class="row-feedback mt-1 small text-danger" style="display:none;"></div>
+                        </td>
+                    </tr>
+                @endfor
+            </tbody>
+        </table>
+
+        <div id="rooms-global-alert" style="position: fixed; top: 10px; right: 10px; z-index: 9999;"></div>
+
     </div>
+@endsection
+
+@section('page_script')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            function showGlobalAlert(message, type = 'success', timeout = 4000) {
+                const wrapper = document.getElementById('rooms-global-alert');
+                const el = document.createElement('div');
+                el.className = `alert alert-${type} alert-dismissible fade show`;
+                el.style.minWidth = '220px';
+                el.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+                wrapper.appendChild(el);
+                setTimeout(() => el.remove(), timeout);
+            }
+
+            function clearRowErrors(tr) {
+                tr.querySelectorAll('.field-error').forEach(e => {
+                    e.style.display = 'none';
+                    e.innerText = '';
+                });
+                tr.querySelectorAll('.is-invalid').forEach(inp => inp.classList.remove('is-invalid'));
+                const rowFeedback = tr.querySelector('.row-feedback');
+                if (rowFeedback) {
+                    rowFeedback.style.display = 'none';
+                    rowFeedback.innerText = '';
+                }
+            }
+
+            function showFieldErrors(tr, errors) {
+                // errors is an object: { fieldName: [msg1, msg2], ... }
+                let shownAny = false;
+                for (const [field, messages] of Object.entries(errors)) {
+                    // try to find input by data-field
+                    const input = tr.querySelector(`[data-field="${field}"]`);
+                    const errEl = tr.querySelector(`.field-error[data-field="${field}"]`);
+                    const msg = Array.isArray(messages) ? messages[0] : messages;
+
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        if (errEl) {
+                            errEl.style.display = 'block';
+                            errEl.innerText = msg;
+                        }
+                        shownAny = true;
+                    } else {
+                        // fallback: show in row-feedback area
+                        const rowFeedback = tr.querySelector('.row-feedback');
+                        if (rowFeedback) {
+                            rowFeedback.style.display = 'block';
+                            rowFeedback.innerText = msg;
+                            shownAny = true;
+                        }
+                    }
+                }
+                return shownAny;
+            }
+
+            document.querySelectorAll('.save-room').forEach(btn => {
+                btn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    const button = e.currentTarget;
+                    const tr = button.closest('tr');
+
+                    clearRowErrors(tr);
+
+                    // collect values from the row
+                    const property_id = tr.querySelector('.input-property_id').value;
+                    const room_number = tr.querySelector('[data-field="room_number"]').value
+                        .trim();
+                    const room_type = tr.querySelector('[data-field="room_type"]').value.trim();
+                    const rent = tr.querySelector('[data-field="rent"]').value;
+                    const floor = tr.querySelector('[data-field="floor"]').value.trim();
+                    const is_occupied = tr.querySelector('[data-field="is_occupied"]').checked ?
+                        1 : 0;
+
+                    // basic client validation
+                    if (!property_id || !room_number || !room_type || !capacity) {
+                        // set small messages under fields that are empty
+                        if (!room_number) {
+                            const el = tr.querySelector(
+                                `.field-error[data-field="room_number"]`);
+                            el.style.display = 'block';
+                            el.innerText = 'Room number is required.';
+                            tr.querySelector('[data-field="room_number"]').classList.add(
+                                'is-invalid');
+                        }
+                        if (!room_type) {
+                            const el = tr.querySelector(`.field-error[data-field="room_type"]`);
+                            el.style.display = 'block';
+                            el.innerText = 'Room type is required.';
+                            tr.querySelector('[data-field="room_type"]').classList.add(
+                                'is-invalid');
+                        }
+                        if (!capacity) {
+                            const el = tr.querySelector(`.field-error[data-field="capacity"]`);
+                            el.style.display = 'block';
+                            el.innerText = 'Capacity is required.';
+                            tr.querySelector('[data-field="capacity"]').classList.add(
+                                'is-invalid');
+                        }
+                        return;
+                    }
+
+                    const method = button.dataset.method || 'POST';
+                    let url = (method.toUpperCase() === 'PUT' && button.dataset.updateUrl) ?
+                        button.dataset.updateUrl : button.dataset.storeUrl;
+
+                    const payload = {
+                        property_id,
+                        room_number,
+                        room_type,
+                        rent: rent || null,
+                        floor: floor || null,
+                        is_occupied,
+                    };
+
+                    const originalText = button.innerHTML;
+                    button.disabled = true;
+                    button.innerText = (method === 'PUT') ? 'Updating...' : 'Saving...';
+
+                    try {
+                        const res = await fetch(url, {
+                            method: method.toUpperCase(),
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (res.status === 422) {
+                            const json = await res.json();
+                            const errors = json.errors || {};
+                            // show per-field errors under inputs
+                            showFieldErrors(tr, errors);
+                            button.disabled = false;
+                            button.innerHTML = originalText;
+                            return;
+                        }
+
+                        if (!res.ok) {
+                            const txt = await res.text();
+                            showGlobalAlert('Server error: ' + (txt || res.statusText),
+                                'danger', 5000);
+                            button.disabled = false;
+                            button.innerHTML = originalText;
+                            return;
+                        }
+
+                        const data = await res.json();
+                        showGlobalAlert(data.message || 'Saved', 'success');
+
+                        // If new room created, update row attributes & button for future updates
+                        if (data.room && data.room.id) {
+                            tr.setAttribute('data-room-id', data.room.id);
+
+                            if (data.update_url) {
+                                button.dataset.updateUrl = data.update_url;
+                                button.dataset.method = 'PUT';
+                                button.innerText = 'Update';
+                            } else {
+                                button.dataset.method = 'PUT';
+                                button.innerText = 'Update';
+                            }
+                        }
+
+                        // update fields with returned normalized data if available
+                        if (data.room) {
+                            tr.querySelector('[data-field="room_number"]').value = data.room
+                                .room_number ?? tr.querySelector('[data-field="room_number"]')
+                                .value;
+                            tr.querySelector('[data-field="room_type"]').value = data.room
+                                .room_type ?? tr.querySelector('[data-field="room_type"]')
+                                .value;
+                            tr.querySelector('[data-field="rent"]').value = data.room.rent ?? tr
+                                .querySelector('[data-field="rent"]').value;
+                            tr.querySelector('[data-field="floor"]').value = data.room.floor ??
+                                tr.querySelector('[data-field="floor"]').value;
+                            tr.querySelector('[data-field="is_occupied"]').checked = (data.room
+                                .is_occupied ?? is_occupied) ? true : false;
+                        }
+
+                    } catch (err) {
+                        console.error(err);
+                        showGlobalAlert('Network error. Check console for details', 'danger',
+                            5000);
+                    } finally {
+                        button.disabled = false;
+                        if (!button.innerText || button.innerText === 'Saving...' || button
+                            .innerText === 'Updating...') {
+                            button.innerText = (button.dataset.method === 'PUT') ? 'Update' :
+                                'Save';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

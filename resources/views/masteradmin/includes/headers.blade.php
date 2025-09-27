@@ -45,11 +45,11 @@
             </li>
 
             <li>
-                <a href="{{ url('master/rooms') }}">
+                <a href="{{ url('master/tenents') }}">
                     <div class="menu-icon">
                         <i class="fas fa-home"></i>
                     </div>
-                    <span class="nav-text">Rooms</span>
+                    <span class="nav-text">Tenents</span>
                 </a>
             </li>
 

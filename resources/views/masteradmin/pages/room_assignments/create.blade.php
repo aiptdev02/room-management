@@ -29,14 +29,23 @@
             </div>
 
             <div class="mb-3">
+                <label>Property</label>
+                <select name="property_id" class="form-control" required>
+                    <option value="">-- Select Property --</option>
+                    @foreach ($properties as $property)
+                        <option value="{{ $property->id }}">
+                            {{ $property->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <small class="text-muted d-block mt-1">Shows only rooms with free slots</small>
+            </div>
+
+            <div class="mb-3">
                 <label>Room</label>
                 <select name="room_id" class="form-control" required>
                     <option value="">-- Select Room --</option>
-                    @foreach ($rooms as $room)
-                        <option value="{{ $room->id }}">
-                            {{ $room->room_number }} — {{ $room->room_type }} — Rem: {{ $room->remainingSlots() }}
-                        </option>
-                    @endforeach
+
                 </select>
                 <small class="text-muted d-block mt-1">Shows only rooms with free slots</small>
             </div>
@@ -52,23 +61,34 @@
             </div>
 
             <button class="btn btn-success">Assign</button>
-            <a href="{{ route('rooms.index') }}" class="btn btn-secondary">Back</a>
-        </form>
-
-        <hr>
-        <form action="{{ route('assignments.auto') }}" method="POST" class="mt-3">
-            @csrf
-            <h5>Auto-assign</h5>
-            <div class="mb-3">
-                <label>Select Guest</label>
-                <select name="paying_guest_id" class="form-control" required>
-                    <option value="">-- Select Guest --</option>
-                    @foreach ($guests as $g)
-                        <option value="{{ $g->id }}">{{ $g->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <button class="btn btn-primary">Auto Assign to first available room</button>
+            <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
         </form>
     </div>
+@endsection
+
+@section('page_script')
+    <script>
+        $('select[name="property_id"]').on('change', function() {
+            var propertyId = $(this).val();
+            if (propertyId) {
+                $.ajax({
+                    url: '/master/rooms/unassigned-rooms/' + propertyId,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        var roomSelect = $('select[name="room_id"]');
+                        roomSelect.empty();
+                        roomSelect.append('<option value="">-- Select Room --</option>');
+                        $.each(data, function(key, room) {
+                            roomSelect.append('<option value="' + room.id + '">' + room
+                                .room_number + ' — ' + room.room_type + ' — Rem: ' + room
+                                .remaining_slots + '</option>');
+                        });
+                    }
+                });
+            } else {
+                $('select[name="room_id"]').empty().append('<option value="">-- Select Room --</option>');
+            }
+        });
+    </script>
 @endsection
