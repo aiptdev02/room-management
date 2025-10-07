@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PayingGuest;
 use App\Models\Property;
+use App\Models\RentCollection;
 use App\Models\Room;
 use App\Models\RoomAssignment;
 use Illuminate\Http\Request;
@@ -76,9 +77,17 @@ class RoomAssignmentController extends Controller
             ]);
 
             // Optionally update room.is_occupied if full
-            if ($room->remainingSlots() <= 1) {
-                $room->update(['is_occupied' => true]);
-            }
+            $room->update(['is_occupied' => true]);
+
+            RentCollection::create([
+                'paying_guest_id' => $request->paying_guest_id,
+                'room_id' => $room->id,
+                'property_id' => $room->property->id,
+                'rent_amount' => $room->rent,
+                'electricity_charges' => 0,
+                'other_charges' => 0,
+                'month' => date('Y-m', strtotime($start)),
+            ]);
 
             DB::commit();
 

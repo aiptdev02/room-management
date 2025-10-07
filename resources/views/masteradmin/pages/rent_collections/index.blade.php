@@ -8,44 +8,35 @@
         <a href="{{ route('rent_collections.create') }}" class="btn btn-primary mb-3">Collect Rent</a>
     </div>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Guest</th>
-                <th>Room</th>
-                <th>Property</th>
-                <th>Rent</th>
-                <th>Month</th>
-                <th>Electricity</th>
-                <th>Other</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($rents as $rent)
-                <tr>
-                    <td>{{ $rent->guest->name }}</td>
-                    <td>{{ $rent->room->room_number ?? '-' }}</td>
-                    <td>{{ $rent->property->name ?? '-' }}</td>
-                    <td>{{ $rent->rent_amount }}</td>
-                    <td>{{ $rent->month }}</td>
-                    <td>{{ $rent->electricity_charges }}</td>
-                    <td>{{ $rent->other_charges }}</td>
-                    <td>
-                        @if ($rent->is_paid)
-                            <span class="badge bg-success">Paid</span>
+    <div class="row">
+        @forelse($properties as $property)
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {{-- Property Image --}}
+                    <div class="p-3">
+                        @if ($property->featured_photo)
+                            <img src="{{ asset($property->featured_photo) }}" class="card-img-top"
+                                style="height: 200px; object-fit: cover;" alt="{{ $property->name }}">
                         @else
-                            <span class="badge bg-danger">Unpaid</span>
+                            <img src="{{ asset('images/no-image.jpg') }}" class="card-img-top"
+                                style="height: 200px; object-fit: cover;" alt="No Image">
                         @endif
-                    </td>
-                    <td>
-                        <a href="{{ url('/master/send-reminder') }}/{{ $rent->guest->id }}" class="btn btn-sm btn-success">
-                            Send WhatsApp Reminder
-                        </a>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+                    </div>
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ $property->name }}</h5>
+                        <p class="card-text">
+                            <strong>Location:</strong> {{ $property->location }} <br>
+                            <strong>Total Rooms:</strong> {{ Str::limit($property->total_rooms, 80) }}<br>
+                        </p>
+                        <div class="mt-1">
+                            <a href="{{ route('rent_collections.show', $property->id) }}" class="btn btn-info btn-sm">View Rooms</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <p>No properties available.</p>
+        @endforelse
+    </div>
 @endsection

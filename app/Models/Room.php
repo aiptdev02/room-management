@@ -24,6 +24,10 @@ class Room extends Model
     {
         return $this->hasMany(RoomAssignment::class);
     }
+    public function singleassignments()
+    {
+        return $this->hasOne(RoomAssignment::class);
+    }
 
     /**
      * Active assignments currently occupying this room.
@@ -61,5 +65,10 @@ class Room extends Model
     public function rooms()
     {
         return $this->hasMany(Room::class);
+    }
+
+    public function rentCollection()
+    {
+        return $this->hasOne(RentCollection::class);
     }
 }

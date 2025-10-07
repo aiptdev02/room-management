@@ -5,28 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\PayingGuest;
 use App\Models\Property;
 use App\Models\RentCollection;
+use App\Models\Room;
 use Illuminate\Http\Request;
 
 class RentCollectionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = RentCollection::with(['guest', 'room', 'property']);
-
-        // Filters
-        if ($request->month) {
-            $query->where('month', $request->month);
-        }
-
-        if ($request->property_id) {
-            $query->where('property_id', $request->property_id);
-        }
-
-        $rents = $query->get();
-
         $properties = Property::all();
 
-        return view('masteradmin.pages.rent_collections.index', compact('rents', 'properties'));
+        return view('masteradmin.pages.rent_collections.index', compact('properties'));
     }
 
     public function create()
@@ -57,5 +45,35 @@ class RentCollectionController extends Controller
         ]);
 
         return redirect()->route('rent_collections.index')->with('success', 'Rent collected successfully!');
+    }
+
+    public function show($id)
+    {
+        // $rents = RentCollection::with('property')->where('property_id', $id)->get();
+        $rents = Room::with('property', 'singleassignments.guest', 'rentCollection')->where('property_id', $id)->get();
+
+        return view('masteradmin.pages.rent_collections.show', compact('rents'));
+    }
+
+    // RentCollectionController.php
+
+    public function update(Request $request, RentCollection $rentCollection)
+    {
+        $data = $request->validate([
+            'rent_amount' => 'required|numeric',
+            'month' => 'required|string',
+            'electricity_charges' => 'nullable|numeric',
+            'other_charges' => 'nullable|numeric',
+            'is_paid' => 'nullable|boolean',
+        ]);
+
+        $data['is_paid'] = $request->has('is_paid');
+
+        $rentCollection->update($data);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Rent updated successfully!',
+        ]);
     }
 }

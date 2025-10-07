@@ -18,6 +18,7 @@
                     <th>Room Type</th>
                     <th>Rent</th>
                     <th>Floor</th>
+                    <th>Assign To</th>
                     <th>Occupied</th>
                     <th>Action</th>
                 </tr>
@@ -60,17 +61,30 @@
                         </td>
 
                         <td>
+                            {{ $room->singleassignments->guest->name ?? 'Not Assigned' }}
+                        </td>
+
+                        <td>
                             <input type="hidden" class="input-property_id" value="{{ $properties->id }}">
 
                             <button class="btn btn-sm btn-success save-room" data-store-url="{{ route('tenents.store') }}"
                                 data-update-url="{{ $room ? route('tenents.update', $room->id) : '' }}"
                                 data-method="{{ $room ? 'PUT' : 'POST' }}">
-                                {!! $room ? '<i class="fa-solid fa-pen-to-square"></i>' : 'Save' !!}
+                                Update
                             </button>
 
-                            <a href={{ "/master/assignments/create?property_id=$properties->id&room_id=$room->id" }} class="btn btn-sm btn-warning">
-                                <i class="fa-solid fa-user-plus"></i>
-                            </a>
+                            @if ($room->singleassignments)
+                                <a href={{ "/master/paying-guests/" . $room->singleassignments->guest->id }}
+                                    class="btn btn-sm btn-warning">
+                                    View Assigned
+                                </a>
+                            @else
+                                <a href={{ "/master/assignments/create?property_id=$properties->id&room_id=$room->id" }}
+                                    class="btn btn-sm btn-warning">
+                                    Assign
+                                </a>
+                            @endif
+
 
                             {{-- fallback row-level feedback (used if server error isn't field specific) --}}
                             <div class="row-feedback mt-1 small text-danger" style="display:none;"></div>
@@ -241,10 +255,10 @@
                             if (data.update_url) {
                                 button.dataset.updateUrl = data.update_url;
                                 button.dataset.method = 'PUT';
-                                button.innerText = '<i class="fa-solid fa-pen-to-square"></i>';
+                                button.innerText = 'Update';
                             } else {
                                 button.dataset.method = 'PUT';
-                                button.innerText = '<i class="fa-solid fa-pen-to-square"></i>';
+                                button.innerText = 'Update';
                             }
                         }
 
@@ -273,7 +287,7 @@
                         if (!button.innerText || button.innerText === 'Saving...' || button
                             .innerText === 'Updating...') {
                             button.innerText = (button.dataset.method === 'PUT') ?
-                                '<i class="fa-solid fa-pen-to-square"></i>' :
+                                'Update' :
                                 'Save';
                         }
                     }

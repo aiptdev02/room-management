@@ -18,7 +18,7 @@
 
             <div class="mb-3">
                 <label>Guest</label>
-                <select name="paying_guest_id" class="form-control" required>
+                <select name="paying_guest_id" class="form-control" id="mySelect" required>
                     <option value="">-- Select Guest --</option>
                     @foreach ($guests as $g)
                         <option value="{{ $g->id }}" {{ isset($guestId) && $guestId == $g->id ? 'selected' : '' }}>
@@ -30,10 +30,11 @@
 
             <div class="mb-3">
                 <label>Property</label>
-                <select name="property_id" class="form-control" required >
+                <select name="property_id" class="form-control" required>
                     <option value="">-- Select Property --</option>
                     @foreach ($properties as $property)
-                        <option value="{{ $property->id }}" {{ isset($property_id) && $property_id == $property->id ? 'selected' : '' }}>
+                        <option value="{{ $property->id }}"
+                            {{ isset($property_id) && $property_id == $property->id ? 'selected' : '' }}>
                             {{ $property->name }}
                         </option>
                     @endforeach
@@ -68,27 +69,65 @@
 
 @section('page_script')
     <script>
-        $('select[name="property_id"]').on('change', function() {
-            var propertyId = $(this).val();
+        $(document).ready(function() {
+            $('#mySelect').select2();
+            const urlParams = new URLSearchParams(window.location.search);
+            const propertyId = urlParams.get('property_id');
+            const roomId = urlParams.get('room_id');
+
+            // Preselect property_id if it exists in URL
             if (propertyId) {
-                $.ajax({
-                    url: '/master/rooms/unassigned-rooms/' + propertyId,
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(data) {
-                        var roomSelect = $('select[name="room_id"]');
-                        roomSelect.empty();
-                        roomSelect.append('<option value="">-- Select Room --</option>');
-                        $.each(data, function(key, room) {
-                            roomSelect.append('<option value="' + room.id + '">' + room
-                                .room_number + ' — ' + room.room_type + ' — Rem: ' + room
-                                .remaining_slots + '</option>');
-                        });
-                    }
-                });
-            } else {
-                $('select[name="room_id"]').empty().append('<option value="">-- Select Room --</option>');
+                var $propertySelect = $('select[name="property_id"]');
+
+                // Try to set it only if the option exists
+                if ($propertySelect.find('option[value="' + propertyId + '"]').length) {
+                    $propertySelect.val(propertyId);
+                }
+
+                // Manually trigger change after setting
+
+                setTimeout(() => {
+                    $('select[name="property_id"]').trigger('change');
+                }, 1000);
             }
+
+
+            // Handle property change event (fetch rooms)
+            $('select[name="property_id"]').on('change', function() {
+                var selectedPropertyId = $(this).val();
+                console.log(selectedPropertyId);
+
+                if (selectedPropertyId) {
+                    $.ajax({
+                        url: '/master/rooms/unassigned-rooms/' + selectedPropertyId,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(data) {
+                            var $roomSelect = $('select[name="room_id"]');
+                            $roomSelect.empty();
+                            $roomSelect.append('<option value="">-- Select Room --</option>');
+
+                            $.each(data, function(key, room) {
+                                $roomSelect.append(
+                                    '<option value="' +
+                                    room.id +
+                                    '">' +
+                                    room.room_number +
+                                    '</option>'
+                                );
+                            });
+
+                            // ✅ Preselect roomId from URL if available
+                            if (roomId) {
+                                $roomSelect.val(roomId);
+                            }
+                        }
+                    });
+                } else {
+                    $('select[name="room_id"]').empty().append(
+                        '<option value="">-- Select Room --</option>');
+                }
+            });
         });
     </script>
 @endsection

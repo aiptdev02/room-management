@@ -14,7 +14,7 @@ class PayingGuestController extends Controller
      */
     public function index()
     {
-        $guests = PayingGuest::latest()->paginate(10);
+        $guests = PayingGuest::with('currentAssignment.room.property')->latest()->paginate(10);
 
         return view('masteradmin.pages.paying_guests.index', compact('guests'));
     }

@@ -59,7 +59,7 @@ class RoomController extends Controller
     public function show($id)
     {
         $properties = Property::find($id);
-        $rooms = Room::where('property_id', $id)->get();
+        $rooms = Room::with('singleassignments.guest')->where('property_id', $id)->get();
 
         return view('masteradmin.pages.rooms.show', compact('rooms', 'properties'));
     }
@@ -82,10 +82,8 @@ class RoomController extends Controller
             'floor' => 'nullable|string|max:50',
             'description' => 'nullable|string|max:255',
             'status' => 'nullable|string|max:50',
-            'is_occupied' => 'nullable|boolean',
+            'is_occupied' => 'nullable',
         ]);
-
-        $data['is_occupied'] = $request->has('is_occupied') ? 1 : 0;
 
         if ($room->update($data)) {
             return response()->json([

@@ -12,6 +12,8 @@
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Aadhar</th>
+                <th>Property</th>
+                <th>Room</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -22,7 +24,9 @@
                     <td>{{ $guest->name }}</td>
                     <td>{{ $guest->phone }}</td>
                     <td>{{ $guest->aadhar_number }}</td>
-                    <td>{{ $guest->status }}</td>
+                    <td>{{ $guest?->currentAssignment?->room?->property?->name }}</td>
+                    <td>{{ $guest?->currentAssignment?->room?->room_number }}</td>
+                    <td>{{ ucfirst($guest->status) }}</td>
                     <td>
                         <a href="{{ route('paying-guests.show', $guest) }}" class="btn btn-sm btn-info">View</a>
                         <a href="{{ route('paying-guests.edit', $guest) }}" class="btn btn-sm btn-warning">Edit</a>

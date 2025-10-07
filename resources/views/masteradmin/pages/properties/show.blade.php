@@ -67,7 +67,7 @@
                             <span class="badge bg-primary me-2">Room {{ $room->room_number }}</span>
                             <span class="text-muted">({{ $room->room_type }})</span>
                         </div>
-                        <a href="{{ route('rooms.show', $room->id) }}" class="btn btn-sm btn-outline-secondary">
+                        <a href="{{ route('tenents.show', $room->id) }}" class="btn btn-sm btn-outline-secondary">
                             View Details
                         </a>
                     </div>

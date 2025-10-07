@@ -16,8 +16,9 @@
     <link href="{{ asset('assets/theme/vendor/toastr/css/toastr.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/theme/vendor/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css') }}"
         rel="stylesheet">
-        <link href="{{ asset('assets/theme/icons/fontawesome/css/all.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/theme/icons/fontawesome/css/all.min.css') }}" rel="stylesheet">
 
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="{{ asset('assets/theme/css/style.css') }}" rel="stylesheet">
     <!-- Style css -->
     {{-- <link class="main-css" href="{{ asset('assets/css/master.css') }}" rel="stylesheet"> --}}
@@ -66,9 +67,7 @@
 <!-- Required vendors -->
 <script src="{{ asset('assets/theme/vendor/global/global.min.js') }}"></script>
 {{-- <script src="{{ asset('assets/js/jquery.min.js') }}"></script> --}}
-<script src="{{ asset('assets/theme/vendor/chart-js/chart.bundle.min.js') }}"></script>
 <script src="{{ asset('assets/theme/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
-<script src="{{ asset('assets/theme/vendor/apexchart/apexchart.js') }}"></script>
 
 <!-- Dashboard 1 -->
 <script src="{{ asset('assets/theme/vendor/draggable/draggable.js') }}"></script>
@@ -80,10 +79,6 @@
 <script src="{{ asset('assets/theme/vendor/datatables/js/jszip.min.js') }}"></script>
 <script src="{{ asset('assets/theme/js/plugins-init/datatables.init.js') }}"></script>
 
-<!-- Apex Chart -->
-
-<script src="{{ asset('assets/theme/vendor/bootstrap-datetimepicker/js/moment.js') }}"></script>
-<script src="{{ asset('assets/theme/vendor/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js') }}"></script>
 
 <!-- Vectormap -->
 <script src="{{ asset('assets/theme/vendor/jqvmap/js/jquery.vmap.min.js') }}"></script>
@@ -92,6 +87,9 @@
 <script src="{{ asset('assets/theme/js/custom.min.js') }}"></script>
 <script src="{{ asset('assets/theme/js/deznav-init.js') }}"></script>
 {{-- <script src="{{ asset('assets/theme/js/demo.js') }}"></script> --}}
+
+{{-- select 2 --}}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <!-- Toastr -->
 <script src="{{ asset('assets/theme/vendor/toastr/js/toastr.min.js') }}"></script>
